@@ -7,6 +7,7 @@ from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAct
 from ulauncher.api.shared.action.RunScriptAction import RunScriptAction
 
 import subprocess
+import re
 
 from memoization import cached
 
@@ -48,8 +49,11 @@ def list_windows():
     # Search for a window by name or class
     for window_id in out.splitlines():
         try:
-            window_name = get_window_name(window_id)
-            if window_name == "": continue
+            if (window_name := get_window_name(window_id)) == "": continue
+            if (raw_window_class := get_xprop(window_id, 'WM_CLASS')) == "": continue
+            if "not found" in raw_window_class: continue
+            if window_name == re.findall(r'"([^"]*)"', raw_window_class)[-1]: continue
+
             windows.append({
                 'name': window_name,
                 'id': window_id,
@@ -57,7 +61,7 @@ def list_windows():
                 'pid': get_xprop(window_id, '_NET_WM_PID')
                 })
         except Exception as e:
-            print("[ERROR] {}".format(e))
+            print("[exception] {}".format(e))
             pass
 
     return windows
