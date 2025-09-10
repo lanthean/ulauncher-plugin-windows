@@ -50,6 +50,7 @@ def list_windows():
     for window_id in out.splitlines():
         try:
             if (window_name := get_window_name(window_id)) == "": continue
+            if "BDHF" in window_name or window_name == "HUD": continue
             if (raw_window_class := get_xprop(window_id, 'WM_CLASS')) == "": continue
             if "not found" in raw_window_class: continue
             if window_name == re.findall(r'"([^"]*)"', raw_window_class)[-1]: continue
